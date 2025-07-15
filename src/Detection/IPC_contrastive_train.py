@@ -11,8 +11,8 @@ import random
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from src.Losses.contrastive_losses import nt_xent_loss
-
+#from src.Losses.contrastive_losses import nt_xent_loss
+from src.Losses.Sup_contrastive_loss import sup_contrastive_loss
 
 # Configs
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -53,10 +53,10 @@ class ContrastiveModel(nn.Module):
     def __init__(self, base_model):
         super().__init__()
         self.encoder = DebertaModel.from_pretrained(base_model)
-
+      
     def forward(self, input_ids1, mask1, input_ids2, mask2):
-        emb1 = self.encoder(input_ids=input_ids1, attention_mask=mask1).last_hidden_state[:, 0, :]
-        emb2 = self.encoder(input_ids=input_ids2, attention_mask=mask2).last_hidden_state[:, 0, :]
+        emb1 = self.encoder(input_ids=input_ids1, attention_mask=mask1).last_hidden_state[:,0,:]
+        emb2 = self.encoder(input_ids=input_ids2, attention_mask=mask2).last_hidden_state[:,0,:]
         return emb1, emb2
 
 # Main training loop
@@ -64,20 +64,23 @@ def train(model, dataloader, optimizer, epochs):
     model.train()
     history = []
     for epoch in range(epochs):
-        epoch_loss = 0
-        for batch in tqdm(dataloader, desc=f"Epoch {epoch+1}"):
+        epoch_loss = 0.0
+        for batch in tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}"):
             ids1 = batch['input_ids_1'].to(device)
             mask1 = batch['attention_mask_1'].to(device)
             ids2 = batch['input_ids_2'].to(device)
             mask2 = batch['attention_mask_2'].to(device)
+            label = batch['label'].to(device)
 
             emb1, emb2 = model(ids1, mask1, ids2, mask2)
-            loss = nt_xent_loss(emb1, emb2)
+            loss = sup_contrastive_loss(emb1, emb2, label)
 
+            # Backpropagation and optimization
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+            # Accumulate loss
             epoch_loss += loss.item()
 
         avg_loss = epoch_loss / len(dataloader)
@@ -102,4 +105,5 @@ if __name__ == "__main__":
 
     model = ContrastiveModel(base_model).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=1e-5)
-    train(model, dataloader, optimizer, epochs=5)
+    train(model, dataloader, optimizer, epochs=1)
+
