@@ -25,4 +25,27 @@ def generate_pairs(data_file, num_negative=300):
 
     print(f"Saved {len(all_pairs)} total pairs to data/contrastive_pairs.json")
 
-generate_pairs('data/TRAIN_Mistral_top_3_ST_threshold_0.8_Uniform_0_10000_10000.json')
+#generate_pairs('data/TRAIN_Mistral_top_3_ST_threshold_0.8_Uniform_0_10000_10000.json')
+
+def generate_WM_Key_pairs(data_file, num_negative=300, key='I_am_doing_my_research'):
+    with open(data_file, 'r') as f:
+        samples = json.load(f)
+        samples = samples[:300] # Limit to first 300 samples for demonstration  
+    
+    positive_pairs = [[record['Watermarked_output'], key , 1] for record in samples]
+    negative_pairs = []
+    for i in range(num_negative):
+        record = random.choice(samples)
+        fake_key = f"FakeKey_{random.randint(1000, 9999)}"
+        negative_pairs.append([record['Watermarked_output'], fake_key , 0])  # [Watermarked output, fake key, 0]
+    
+    all_pairs = positive_pairs + negative_pairs
+    random.shuffle(all_pairs)
+    # Save to file
+    with open('data/contrastive_Sentence_key_pairs.json', 'w') as f:
+        json.dump(all_pairs, f, indent=2)
+    
+    print(f"Saved {len(all_pairs)} total pairs to data/contrastive_Sentence_key_pairs.json")
+
+
+generate_WM_Key_pairs('data\Train_Llama2_top_3_threshold_0.8_KEY_I_am_doing_my_research_0_10k.json')

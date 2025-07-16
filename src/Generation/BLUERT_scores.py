@@ -5,9 +5,9 @@ from bleurt import score as bleurt_score
 os.environ["HF_TOKEN"] = "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"
 # Set the cache directory for BLEURT    
 cache_dir = 'cash'
-
+path = os.path.join("\bleurt\bleurt\test_checkpoint")
 # Initialize BLEURT scorer (adjust checkpoint path to your downloaded BLEURT model)
-bleurt_scorer = bleurt_score.BleurtScorer(r"C:\Users\ayham\OneDrive\Desktop\SafeSeal\bleurt\bleurt\test_checkpoint")
+bleurt_scorer = bleurt_score.BleurtScorer(path)
 
 def calc_scores(original_sentence, substitute_sentences):
     try:

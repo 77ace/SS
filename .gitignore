@@ -33,7 +33,7 @@ Train_Llama3_top_5_threshold_0.8_Uniform_0_1_1.json
 Train_Llama3_top_5_threshold_0.8_Uniform_0_1_Randomization.json
 cash/hub/models--microsoft--deberta-base-mnli/.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/added_tokens.json
 cash/hub/models--microsoft--deberta-base-mnli/.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/model.safetensors
-cash/hub/models--microsoft--deberta-base-mnli/.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/model.safetensors.index.json
+cash/hub/models--microsoft--deberta-base-mnli/\.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/model.safetensors.index.json
 cash/hub/models--microsoft--deberta-base-mnli/.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/special_tokens_map.json
 cash/hub/models--microsoft--deberta-base-mnli/.no_exist/a80a6eb013898011540b19bf1f64e21eb61e53d6/tokenizer.json
 cash/hub/models--microsoft--deberta-base-mnli/refs/main
@@ -46,10 +46,13 @@ cash/hub/version.txt
 contrastive_output/loss_plot.png
 contrastive_output/loss_plot_200_pairs_5_epochs.png
 data/Llama_no_wm.json
-data/TRAIN_Mistral_top_3_ST_threshold_0.8_Uniform_0_10000_10000.json
-data/Test_Mistral_top_3_ST_threshold_0.8_Uniform_0_1000_1000.json
 data/contrastive_pairs.json
 lookup_cache_llama2.json
 requirements.txt
 requirements_modified.txt
 safeseal.yml
+src/**/__pycache__/
+*.pyc
+*.png
+contrastive_output/contrastive_model.pt
+contrastive_output/perkey_watermark_detector.pt
