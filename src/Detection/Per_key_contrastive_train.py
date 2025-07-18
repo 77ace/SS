@@ -21,7 +21,7 @@ tokenizer = DebertaTokenizer.from_pretrained(base_model)
 output_dir = "contrastive_output"
 os.makedirs(output_dir, exist_ok=True)
 
-# Load contrastive pairs (positive/negative) format = [WM_output, key_string, label
+# Load contrastive pairs (positive/negative) format = [WM_output, key_string, label]
 def load_pairs(pair_file):
     with open(pair_file, 'r') as f:
         pairs = json.load(f)  # Format: list of [text1, text2, label]
@@ -35,38 +35,18 @@ class ContrastiveTextDataset(Dataset):
 
     def __getitem__(self, idx):
         sentence, key_string, label = self.pairs[idx]
-        
-        # Randomly sample a second index ≠ idx
-        # rand_idx = idx
-        # while rand_idx == idx:
-        #     rand_idx = random.randint(0, len(self.pairs) - 1)
-
-        # sentence2, key_string2, label2 = self.pairs[rand_idx]
 
         sent_enc1 = self.tokenizer(sentence, truncation=True, padding='max_length', 
                            max_length=self.max_length, return_tensors='pt')
         key_enc1 = self.tokenizer(key_string, truncation=True, padding='max_length', 
                           max_length=self.max_length, return_tensors='pt')
-
-        # sent_enc2 = self.tokenizer(sentence2, truncation=True, padding='max_length', 
-        #                    max_length=self.max_length, return_tensors='pt')
-        # key_enc2 = self.tokenizer(key_string2, truncation=True, padding='max_length', 
-        #                   max_length=self.max_length, return_tensors='pt')
        
         return {
-            #sentence and key encodings for the first item
             'sentence_input_ids_1': sent_enc1['input_ids'].squeeze(0),
             'sentence_attention_mask_1': sent_enc1['attention_mask'].squeeze(0),
             'key_input_ids_1': key_enc1['input_ids'].squeeze(0),
             'key_attention_mask_1': key_enc1['attention_mask'].squeeze(0),
-            #sentence and key encodings for the second item
-            # 'sentence_input_ids_2': sent_enc2['input_ids'].squeeze(0),
-            # 'sentence_attention_mask_2': sent_enc2['attention_mask'].squeeze(0),
-            # 'key_input_ids_2': key_enc2['input_ids'].squeeze(0),
-            # 'key_attention_mask_2': key_enc2['attention_mask'].squeeze(0),
-            # Labels for contrastive loss
             'label_1': torch.tensor(label, dtype=torch.float),
-            # 'label_2': torch.tensor(label2, dtype=torch.float)
         }
 
     def __len__(self):
@@ -106,15 +86,6 @@ def train(model, dataloader, optimizer, epochs):
             k1 = batch['key_input_ids_1'].to(device)
             km1 = batch['key_attention_mask_1'].to(device)
 
-            # # ——— Unpack pair #2 ———
-            # s2 = batch['sentence_input_ids_2'].to(device)
-            # m2 = batch['sentence_attention_mask_2'].to(device)
-            # k2 = batch['key_input_ids_2'].to(device)
-            # km2 = batch['key_attention_mask_2'].to(device)
-
-            # ——— Forward pass ———
-            # emb_anchor   = model(s1, m1, k1, km1)  
-            # emb_counter  = model(s2, m2, k2, km2) 
             sent_emb, key_emb = model(s1, m1, k1, km1)  
 
             loss = nt_xent_loss(sent_emb, key_emb)  

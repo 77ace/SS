@@ -81,3 +81,31 @@ def HashBasedSampling(alternatives, similarity ,target ,hash_key, threshold=0.5,
 # similarities = [0.95, 0.94, 0.80]
 
 # HashBasedSampling(alternatives, similarities, "beautiful")
+import spacy
+nlp = spacy.load("en_core_web_sm")
+
+def hash_key_sampling_with_context_auto(original, alternatives, similarity, key, sentence, position, window_size=4):
+    """
+    Hash-based synonym selection using a context-aware key from left-side context.
+    """
+    doc = nlp(sentence)
+    tokens = [token.text for token in doc]
+ 
+    if position >= len(tokens):
+        return original  # avoid out-of-range error
+ 
+    # Get left-side context window
+    start = max(0, position - window_size)
+    context_window = " ".join(tokens[start:position])
+ 
+    filtered = []
+    for alt, sim in zip(alternatives, similarity):
+        hash_input = f"{key}:{context_window.lower()}:{alt.lower()}"
+        hash_val = int(hashlib.sha256(hash_input.encode("utf-8")).hexdigest(), 16)
+        if hash_val % 2 == 1:
+            filtered.append((alt, sim))
+ 
+    if filtered:
+        return max(filtered, key=lambda x: x[1])[0]
+    else:
+        return original
