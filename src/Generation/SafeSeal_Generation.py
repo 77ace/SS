@@ -14,7 +14,7 @@ import nltk
 #nltk.download('stopwords')
 #nltk.download('averaged_perceptron_tagger_eng')
 import time
-from sampling import AdaptiveSampling, HashBasedSampling
+from sampling import AdaptiveSampling, HashBasedSampling, hash_key_sampling_with_context_auto
 
 from utils import extract_entities_and_pos, preprocess_text, split_sentences, look_up, look_up_with_cache
 from randomization import randomize
@@ -73,8 +73,26 @@ def process_target(pair, index, tokenizer, lm_model, Top_K, Final_K, threshold):
 
             #3: Hash-based Sampling
             # Note: The threshold is set to 0.5 by default, but can be modified
+            # print("-------------------------------------Sampling-----------------------------------------")
+            # selected_word = HashBasedSampling(alternatives, similarity, word, hash_key=hash_key ) #threshold=0.5)
+            # print("-------------------")
+            # print(f" Word: {word}")
+            # print(f" Alternatives: {alternatives}")
+            # print(f" Similarity: {similarity}")
+            # print(f" Sampled: {selected_word}")
+            # print("----------------------------------Sampling Done---------------------------------------")
+            # # Save the result 
+            # Randomized_results.append({
+            #     "word": word,
+            #     "alternatives": alternatives,
+            #     "Sampled": selected_word
+            # })
+            # return selected_word
+
+            #4 Hash-Based Sampling with Context
+            # Note: The threshold is set to 0.5 by default, but can be modified
             print("-------------------------------------Sampling-----------------------------------------")
-            selected_word = HashBasedSampling(alternatives, similarity, word, hash_key=hash_key ) #threshold=0.5)
+            selected_word = hash_key_sampling_with_context_auto(word, alternatives, similarity, hash_key, sentence=pair[0], position=index)
             print("-------------------")
             print(f" Word: {word}")
             print(f" Alternatives: {alternatives}")
@@ -233,8 +251,8 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='roberta-base', type=str, help='Model for Masked LM to produce alternatives')
     parser.add_argument('--top_k', default=15, type=int, help='Top potential alternatives that LM will produce (Not yet formatted and evaluated)')
     #### Recondmend to modify the below parameters
-    parser.add_argument('--data', default='data\Llama_no_wm.json', type=str, help='Data in json format to apply watermarking')  
+    parser.add_argument('--data', default= os.path.join("data","Llama_no_wm.json"), type=str, help='Data in json format to apply watermarking')  
     parser.add_argument('--final_k', default=3, type=int, help='Final K alternatives to consider')
     parser.add_argument('--threshold', default=0.8, type=float, help='Threshold for similarity')
-    parser.add_argument('--hash_key', default='SafeSeel', type=str, help='Key for hash-based sampling')
+    parser.add_argument('--hash_key', default='This_is_my_test_key', type=str, help='Key for hash-based sampling')
     main(parser.parse_args())
