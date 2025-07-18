@@ -81,7 +81,7 @@ def process_target(pair, index, tokenizer, lm_model, Top_K, Final_K, threshold):
             print(f" Similarity: {similarity}")
             print(f" Sampled: {selected_word}")
             print("----------------------------------Sampling Done---------------------------------------")
-             # Save the result 
+            # Save the result 
             Randomized_results.append({
                 "word": word,
                 "alternatives": alternatives,
@@ -181,9 +181,10 @@ def main(args):
     Top_K = args.top_k
     Final_K = args.final_k
     threshold = args.threshold
-    output_name = f"Train_Llama3_top_{Final_K}_threshold_{threshold}_Uniform_{N_start}_{N_end}"
     global hash_key
     hash_key = args.hash_key
+    output_name = os.path.join("Generation_output", f"Train_Llama3_top_{Final_K}_threshold_{threshold}_Uniform_{N_start}_{N_end}")
+   
 
     # Load data from the specified JSON file
     with open(args.data, 'r') as f:

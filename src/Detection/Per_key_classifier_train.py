@@ -108,14 +108,14 @@ def trainDetector(model, dataloader, optimizer, epochs=3):
         print(f"Epoch {epoch+1} Avg Loss: {avg_loss:.4f}")
     
     # Save Detector 
-    save_path = os.path.join(output_dir, "contrastive_output/perkey_watermark_detector.pt")
+    save_path = os.path.join(output_dir, "perkey_watermark_detector.pt")
     torch.save(model.state_dict(), save_path)
 
 
 
 if __name__ == "__main__":
     #load pairs
-    pair_file = os.path.join("data/contrastive_Sentence_key_pairs.json")  # path to your pair file
+    pair_file = os.path.join("data", "contrastive_Sentence_key_pairs.json")  # path to your pair file
     pairs = load_pairs(pair_file)
     pairs = pairs[:100]
     # Create dataset and dataloader
