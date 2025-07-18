@@ -91,14 +91,14 @@ def process_target(pair, index, tokenizer, lm_model, Top_K, Final_K, threshold):
 
             #4 Hash-Based Sampling with Context
             # Note: The threshold is set to 0.5 by default, but can be modified
-            print("-------------------------------------Sampling-----------------------------------------")
+            #print("-------------------------------------Sampling-----------------------------------------")
             selected_word = hash_key_sampling_with_context_auto(word, alternatives, similarity, hash_key, sentence=pair[0], position=index)
-            print("-------------------")
-            print(f" Word: {word}")
-            print(f" Alternatives: {alternatives}")
-            print(f" Similarity: {similarity}")
-            print(f" Sampled: {selected_word}")
-            print("----------------------------------Sampling Done---------------------------------------")
+            # print("-------------------")
+            # print(f" Word: {word}")
+            # print(f" Alternatives: {alternatives}")
+            # print(f" Similarity: {similarity}")
+            # print(f" Sampled: {selected_word}")
+            # print("----------------------------------Sampling Done---------------------------------------")
             # Save the result 
             Randomized_results.append({
                 "word": word,
@@ -191,8 +191,8 @@ def main(args):
     lm_model = RobertaForMaskedLM.from_pretrained(args.model, attn_implementation="eager")
     lm_model.eval()
     # Read json file
-    N_start = 0
-    N_end = 1
+    N_start = 100
+    N_end = 200
     generated_data = []
     input_counter = 0
     saving_freq = 1
@@ -201,8 +201,8 @@ def main(args):
     threshold = args.threshold
     global hash_key
     hash_key = args.hash_key
-    output_name = os.path.join("Generation_output", f"Train_Llama3_top_{Final_K}_threshold_{threshold}_Uniform_{N_start}_{N_end}")
-   
+    output_name = os.path.join("Generation_output", f"Train_Llama3_top_{Final_K}_threshold_{threshold}_Key_{hash_key}_{N_start}_{N_end}")
+    
 
     # Load data from the specified JSON file
     with open(args.data, 'r') as f:

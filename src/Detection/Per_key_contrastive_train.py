@@ -108,7 +108,7 @@ def train(model, dataloader, optimizer, epochs):
 
 # Run training
 if __name__ == "__main__":
-    train_file = "data\contrastive_Sentence_key_pairs.json"  # path to your pair file
+    train_file = os.path.join("data","contrastive_Sentence_key_pairs.json")  # path to your pair file
     data = load_pairs(train_file)
     data = data[:100]
     dataset = ContrastiveTextDataset(data, tokenizer)

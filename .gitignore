@@ -31,5 +31,5 @@ __pycache__/
 # Logs, outputs, and temp files
 *.log
 *.lock
-*.json
+
 Generation_output/

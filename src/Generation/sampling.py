@@ -109,9 +109,9 @@ def hash_key_sampling_with_context_auto(original, alternatives, similarity, key,
         else:
             hash_values.append(0)
 
-    #check everything working as intended
-    print(f"-------hash_values= {hash_values}-------") 
-    print(f"-------Filtered Candidates= {filtered}-------")
+    # #check everything working as intended
+    # print(f"-------hash_values= {hash_values}-------") 
+    # print(f"-------Filtered Candidates= {filtered}-------")
 
     if filtered:
         return max(filtered, key=lambda x: x[1])[0]
