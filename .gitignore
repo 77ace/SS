@@ -56,3 +56,24 @@ src/**/__pycache__/
 *.png
 contrastive_output/contrastive_model.pt
 contrastive_output/perkey_watermark_detector.pt
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Hugging Face & model artifacts
+.cache/
+*.pt
+*.bin
+*.ckpt
+
+# Logs, outputs, and temp files
+*.log
+*.lock
+*.json
+Generation_output/
