@@ -48,4 +48,27 @@ def generate_WM_Key_pairs(data_file, num_negative=300, key='I_am_doing_my_resear
     print(f"Saved {len(all_pairs)} total pairs to data/contrastive_Sentence_key_pairs.json")
 
 
-generate_WM_Key_pairs('data\Train_Llama2_top_3_threshold_0.8_KEY_I_am_doing_my_research_0_10k.json')
+#generate_WM_Key_pairs('data\Train_Llama2_top_3_threshold_0.8_KEY_I_am_doing_my_research_0_10k.json')
+
+def generate_WM1_WM2_pairs(data_file_1, data_file_2, num_negative=300):
+    with open(data_file_1, 'r') as f:
+        samples_1 = json.load(f)
+        samples_1 = samples_1[:300] # Limit to first 300 samples for demonstration
+
+    wm_1s = [sample['Watermarked_output'] for sample in samples_1]
+
+    with open(data_file_2, 'r') as f:
+        samples_2 = json.load(f)
+        samples_2 = samples_2[:300] # Limit to first 300 samples for demonstration
+
+    wm_2s = [sample['Watermarked_output'] for sample in samples_2]
+
+    pairs = [[wm_1, wm_2] for wm_1 in wm_1s for wm_2 in wm_2s]
+    
+    # Save to file
+    with open('data/contrastive_pairs.json', 'w') as f:
+        json.dump(pairs, f, indent=2)
+
+    print(f"Saved {len(pairs)} total pairs to data/contrastive_pairs.json")
+
+#generate_WM1_WM2_pairs('data/Train_Llama2_top_3_threshold_0.8_KEY_I_am_doing_my_research_0_10k.json', )
