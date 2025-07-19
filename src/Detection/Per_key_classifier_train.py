@@ -23,27 +23,24 @@ def load_pairs(pair_file):
 
 class ContrastiveTextDataset(Dataset):
     def __init__(self, pairs, tokenizer, max_length=256):
-        self.pairs = pairs
+        self.data = pairs
         self.tokenizer = tokenizer
         self.max_length = max_length
 
     def __getitem__(self, idx):
-        sentence, key_string, label = self.pairs[idx]
+        Wm1, Wm2 = self.data[idx]
 
-        
-
-        enc = self.tokenizer(sentence,key_string, truncation=True, padding='max_length',
-                                 max_length=self.max_length, return_tensors='pt')
+        enc = self.tokenizer(Wm1,Wm2, truncation=True, padding='max_length',
+                                    max_length=self.max_length, return_tensors='pt')
 
         return {
             "input_ids": enc['input_ids'].squeeze(),
             "attention_mask": enc['attention_mask'].squeeze(),
             "label": torch.tensor(label, dtype=torch.float)
         }
-       
 
     def __len__(self):
-        return len(self.pairs)
+        return len(self.data)
 
 # encoder model
 class WMDetector(nn.Module):
@@ -115,7 +112,7 @@ def trainDetector(model, dataloader, optimizer, epochs=3):
 
 if __name__ == "__main__":
     #load pairs
-    pair_file = os.path.join("data", "contrastive_Sentence_key_pairs.json")  # path to your pair file
+    pair_file = os.path.join("data", "contrastive_pairs.json")  # path to your pair file
     pairs = load_pairs(pair_file)
     pairs = pairs[:100]
     # Create dataset and dataloader

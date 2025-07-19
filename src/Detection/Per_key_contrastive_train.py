@@ -29,23 +29,24 @@ def load_pairs(pair_file):
     return pairs
 
 class ContrastiveTextDataset(Dataset):
-    def __init__(self, data, tokenizer, key, max_length=256):
+    def __init__(self, data, tokenizer, key1,key2, max_length=256):
         self.data = data
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.key = key
+        self.key1 = key1
+        self.key2 = key2
 
     def __getitem__(self, idx):
-        wm_output, original_output = self.data[idx]
-        wm_enc= self.tokenizer(wm_output, truncation=True, padding='max_length', 
+        wm_output, wm2_output = self.data[idx]
+        wm_enc= self.tokenizer(wm_output, self.key1, truncation=True, padding='max_length', 
                             max_length=self.max_length, return_tensors='pt')
-        original_enc = self.tokenizer(original_output, truncation=True, padding='max_length', 
+        wm2_enc = self.tokenizer(wm2_output,self.key2, truncation=True, padding='max_length', 
                             max_length=self.max_length, return_tensors='pt')
         return {
             'input_ids': wm_enc['input_ids'].squeeze(0),
             'attention_mask': wm_enc['attention_mask'].squeeze(0),
-            'input_ids_2': original_enc['input_ids'].squeeze(0),
-            'attention_mask_2': original_enc['attention_mask'].squeeze(0),
+            'input_ids_2': wm2_enc['input_ids'].squeeze(0),
+            'attention_mask_2': wm2_enc['attention_mask'].squeeze(0),
         }
     
     def __len__(self):
@@ -108,10 +109,12 @@ def train(model, dataloader, optimizer, epochs):
 
 # Run training
 if __name__ == "__main__":
-    train_file = os.path.join("data","contrastive_Sentence_key_pairs.json")  # path to your pair file
+    train_file = os.path.join("data","contrastive_pairs.json")  # path to your pair file
     data = load_pairs(train_file)
     data = data[:100]
-    dataset = ContrastiveTextDataset(data, tokenizer)
+    key1 ="I_am_doing_my_research"
+    key2= "This_is_my_test_key"
+    dataset = ContrastiveTextDataset(data, tokenizer, key1=key1, key2=key2)
     dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
 
     model = ContrastiveModel(base_model).to(device)
