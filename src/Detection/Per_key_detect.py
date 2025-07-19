@@ -23,24 +23,29 @@ class DetectionDataset(Dataset):
         self.max_length = max_length
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data) * 2
 
     def __getitem__(self, idx):
-        item = self.data[idx]
-        # combine sentence and key properly
+        pair_idx = idx // 2
+        variant  = "pos" if idx % 2 == 0 else "neg"
+        item     = self.data[pair_idx]
+
         enc = self.tokenizer(
             self.key,
-            item["text"],
+            item[f"Watermarked_output_{variant}"],
             truncation=True,
             padding="max_length",
             max_length=self.max_length,
             return_tensors="pt"
         )
+        label = item[f"label_{variant}"]
+
         return {
             "input_ids": enc["input_ids"].squeeze(0),
             "attention_mask": enc["attention_mask"].squeeze(0),
-            "label": torch.tensor(item["label"], dtype=torch.float)
+            "label": torch.tensor(label, dtype=torch.float)
         }
+
 
 # ——— Detector Model Definition ———
 class WMDetector(nn.Module):
@@ -107,9 +112,9 @@ def evaluate(model, dataloader):
 
 # ——— Main ———
 if __name__ == "__main__":
-    test_file     = os.path.join( "data", "test_watermark_detection.json")    # must have 'text' & 'label'
-    encoder_path  = os.path.join("contrastive_output","contrastive_encoder.pt")
-    detector_path = "perkey_watermark_detector.pt"
+    test_file     = os.path.join( "data", "contrastive_pairs.json")    # must have 'text' & 'label'
+    encoder_path  = os.path.join("contrastive_output","contrastive_model.pt")
+    detector_path = os.path.join("contrastive_output","perkey_watermark_detector.pt")
     key           = "I_am_doing_my_research"
 
     # prepare data

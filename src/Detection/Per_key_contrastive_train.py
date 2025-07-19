@@ -37,7 +37,7 @@ class ContrastiveTextDataset(Dataset):
         self.key2 = key2
 
     def __getitem__(self, idx):
-        wm_output, wm2_output = self.data[idx]
+        wm_output, wm2_output = self.data[idx]['Watermarked_output_pos'], self.data[idx]['Watermarked_output_neg']
         wm_enc= self.tokenizer(wm_output, self.key1, truncation=True, padding='max_length', 
                             max_length=self.max_length, return_tensors='pt')
         wm2_enc = self.tokenizer(wm2_output,self.key2, truncation=True, padding='max_length', 
@@ -99,13 +99,13 @@ def train(model, dataloader, optimizer, epochs):
     print(f"Model saved to {save_path}")
 
 
-    # Save plot
-    plt.plot(range(1, epochs+1), history, label='Train Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Contrastive Training Loss')
-    plt.savefig(os.path.join(output_dir, f'loss_plot_{len(data)}_pairs_{epochs}_epochs.png'))
-    print(f"Saved loss plot to {output_dir}/loss_plot_{len(data)}_pairs_{epochs}_epochs.png")
+    # # Save plot
+    # plt.plot(range(1, epochs+1), history, label='Train Loss')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.title('Contrastive Training Loss')
+    # plt.savefig(os.path.join(output_dir, f'loss_plot_{len(data)}_pairs_{epochs}_epochs.png'))
+    # print(f"Saved loss plot to {output_dir}/loss_plot_{len(data)}_pairs_{epochs}_epochs.png")
 
 # Run training
 if __name__ == "__main__":

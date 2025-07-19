@@ -15,10 +15,10 @@ output_dir = "contrastive_output"
 os.makedirs(output_dir, exist_ok=True)
 loss_fn = nn.BCEWithLogitsLoss()
 
-# Load contrastive pairs (positive/negative) format [WM_output, key_string, label]
+
 def load_pairs(pair_file):
     with open(pair_file, 'r') as f:
-        pairs = json.load(f)  # Format: list of [text1, text2, label]
+        pairs = json.load(f)  
     return pairs
 
 class ContrastiveTextDataset(Dataset):
@@ -28,15 +28,23 @@ class ContrastiveTextDataset(Dataset):
         self.max_length = max_length
 
     def __getitem__(self, idx):
-        Wm1, Wm2 = self.data[idx]
+        Wm1, Wm2, label1, label2 = self.data[idx]['Watermarked_output_pos'], self.data[idx]['Watermarked_output_neg'], self.data[idx]['label_pos'], self.data[idx]['label_neg']
 
-        enc = self.tokenizer(Wm1,Wm2, truncation=True, padding='max_length',
+        wm1_enc = self.tokenizer(Wm1, truncation=True, padding='max_length',
                                     max_length=self.max_length, return_tensors='pt')
 
+        wm2_enc = self.tokenizer(Wm2, truncation=True, padding='max_length',
+                                    max_length=self.max_length, return_tensors='pt')
+
+        
+
         return {
-            "input_ids": enc['input_ids'].squeeze(),
-            "attention_mask": enc['attention_mask'].squeeze(),
-            "label": torch.tensor(label, dtype=torch.float)
+            "input_ids": wm1_enc['input_ids'].squeeze(),
+            "attention_mask": wm1_enc['attention_mask'].squeeze(),
+            "label": torch.tensor(label1, dtype=torch.float),
+            "input_ids_2": wm2_enc['input_ids'].squeeze(),
+            "attention_mask_2": wm2_enc['attention_mask'].squeeze(),
+            "label_2": torch.tensor(label2, dtype=torch.float)
         }
 
     def __len__(self):
@@ -92,6 +100,16 @@ def trainDetector(model, dataloader, optimizer, epochs=3):
 
             logits = model(input_ids, attention_mask)
             loss = loss_fn(logits, labels.unsqueeze(1))
+
+
+            input_ids_2 = batch["input_ids_2"].to(device)
+            attention_mask_2 = batch["attention_mask_2"].to(device)
+            labels_2 = batch["label_2"].to(device)
+
+            logits_2 = model(input_ids_2, attention_mask_2)
+            loss_2 = loss_fn(logits_2, labels_2.unsqueeze(1))
+
+            loss += loss_2
 
             # Backpropagation and optimization
             optimizer.zero_grad()
