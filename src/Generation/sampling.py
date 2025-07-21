@@ -115,7 +115,7 @@ def hash_key_sampling_with_context_auto(original, alternatives, similarity, key,
     # print(f"-------Filtered Candidates= {filtered}-------")
 
     if filtered:
-        # return max(filtered, key=lambda x: x[1])[0] # Return the candidate with the highest similarity score
+        #return max(filtered, key=lambda x: x[1])[0] # Return the candidate with the highest similarity score
         return random.choice(filtered)[0]  # Randomly select from filtered candidates
     else:
         print("No candidates found based on the hash-based sampling.")

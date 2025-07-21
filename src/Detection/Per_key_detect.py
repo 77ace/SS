@@ -7,39 +7,33 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from transformers import DebertaTokenizer, DebertaModel
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from tqdm import tqdm
 
-# ——— Configs ———
+# Configs
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 base_model = "microsoft/deberta-base-mnli"
 tokenizer = DebertaTokenizer.from_pretrained(base_model)
 
-# ——— Dataset for Inference ———
+
 class DetectionDataset(Dataset):
-    def __init__(self, test_file_path, tokenizer, key, max_length=256):
+    def __init__(self, test_file_path, tokenizer, max_length=256):
         with open(test_file_path, 'r') as f:
             self.data = json.load(f)
         self.tokenizer = tokenizer
-        self.key = key
         self.max_length = max_length
 
     def __len__(self):
-        return len(self.data) * 2
+        return len(self.data)
 
     def __getitem__(self, idx):
-        pair_idx = idx // 2
-        variant  = "pos" if idx % 2 == 0 else "neg"
-        item     = self.data[pair_idx]
 
-        enc = self.tokenizer(
-            self.key,
-            item[f"Watermarked_output_{variant}"],
-            truncation=True,
-            padding="max_length",
-            max_length=self.max_length,
-            return_tensors="pt"
-        )
-        label = item[f"label_{variant}"]
+        wm_ouptut = self.data[idx]["Watermarked_output"]
+        label = self.data[idx]["label"]
+        key = self.data[idx]["key"]
 
+        enc = self.tokenizer(wm_ouptut,key, truncation=True,
+                            padding="max_length",max_length=self.max_length,return_tensors="pt")
+        
         return {
             "input_ids": enc["input_ids"].squeeze(0),
             "attention_mask": enc["attention_mask"].squeeze(0),
@@ -57,8 +51,8 @@ class WMDetector(nn.Module):
         state_dict = torch.load(encoder_path)
         self.encoder.load_state_dict(state_dict)
         # 3) freeze encoder
-        for p in self.encoder.parameters():
-            p.requires_grad = False
+        for param in self.encoder.parameters():
+            param.requires_grad = False
 
         # 4) binary head (no sigmoid here—use BCEWithLogitsLoss semantics)
         hidden_size = self.encoder.config.hidden_size
@@ -85,7 +79,7 @@ def evaluate(model, dataloader):
     preds, labels = [], []
 
     with torch.no_grad():
-        for batch in dataloader:
+        for batch in tqdm(dataloader, desc="Evaluating..."):
             ids   = batch["input_ids"].to(device)
             mask  = batch["attention_mask"].to(device)
             lab   = batch["label"].to(device)
@@ -110,15 +104,14 @@ def evaluate(model, dataloader):
     print(f"Recall:    {rec:.4f}")
     print(f"F1 Score:  {f1:.4f}")
 
-# ——— Main ———
 if __name__ == "__main__":
-    test_file= os.path.join( "data", "contrastive_pairs.json")    # must have 'text' & 'label'
+    test_file= os.path.join( "data", "classifier_train.json")    # must have 'text' & 'label'
     encoder_path= os.path.join("contrastive_output","contrastive_model.pt")
     detector_path = os.path.join("contrastive_output","perkey_watermark_detector.pt")
-    key="I_am_doing_my_research"
+
 
     # prepare data
-    dataset  = DetectionDataset(test_file, tokenizer, key)
+    dataset  = DetectionDataset(test_file, tokenizer)
     dataloader = DataLoader(dataset, batch_size=16)
 
     # load model

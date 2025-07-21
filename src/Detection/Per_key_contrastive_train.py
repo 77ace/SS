@@ -15,7 +15,6 @@ from src.Losses.contrastive_losses import nt_xent_loss
 #from src.Losses.Sup_contrastive_loss import sup_contrastive_loss
 
 # Configs
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 base_model = "microsoft/deberta-base-mnli"
 tokenizer = DebertaTokenizer.from_pretrained(base_model)
@@ -23,7 +22,7 @@ output_dir = "contrastive_output"
 os.makedirs(output_dir, exist_ok=True)
 
 # Load contrastive pairs (positive/negative) format = [WM_output, key_string, label]
-def load_pairs(pair_file):
+def load_data(pair_file):
     with open(pair_file, 'r') as f:
         pairs = json.load(f)  # Format: list of [text1, text2, label]
     return pairs
@@ -37,16 +36,16 @@ class ContrastiveTextDataset(Dataset):
         self.key2 = key2
 
     def __getitem__(self, idx):
-        wm_output, wm2_output = self.data[idx]['Watermarked_output_pos'], self.data[idx]['Watermarked_output_neg']
-        wm_enc= self.tokenizer(wm_output, self.key1, truncation=True, padding='max_length', 
+        wm_output = self.data[idx]['Watermarked_output']
+        enc1= self.tokenizer(wm_output, self.key1, truncation=True, padding='max_length', 
                             max_length=self.max_length, return_tensors='pt')
-        wm2_enc = self.tokenizer(wm2_output,self.key2, truncation=True, padding='max_length', 
+        enc2 = self.tokenizer(wm_output,self.key2, truncation=True, padding='max_length', 
                             max_length=self.max_length, return_tensors='pt')
         return {
-            'input_ids': wm_enc['input_ids'].squeeze(0),
-            'attention_mask': wm_enc['attention_mask'].squeeze(0),
-            'input_ids_2': wm2_enc['input_ids'].squeeze(0),
-            'attention_mask_2': wm2_enc['attention_mask'].squeeze(0),
+            'input_ids': enc1['input_ids'].squeeze(0),
+            'attention_mask': enc1['attention_mask'].squeeze(0),
+            'input_ids_2': enc2['input_ids'].squeeze(0),
+            'attention_mask_2': enc2['attention_mask'].squeeze(0),
         }
     
     def __len__(self):
@@ -70,15 +69,15 @@ def train(model, dataloader, optimizer, epochs):
         epoch_loss = 0.0
         for batch in tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}"):
             
-            wm1_ids = batch['input_ids'].to(device)
-            wm1_mask = batch['attention_mask'].to(device)
-            wm2_ids= batch['input_ids_2'].to(device)
-            wm2_mask = batch['attention_mask_2'].to(device)
+            ids_1 = batch['input_ids'].to(device)
+            mask_1 = batch['attention_mask'].to(device)
+            ids_2= batch['input_ids_2'].to(device)
+            mask_2 = batch['attention_mask_2'].to(device)
 
-            wm1_emb = model(wm1_ids, wm1_mask)
-            wm2_emb = model(wm2_ids, wm2_mask)
+            emb1 = model(ids_1, mask_1)
+            emb2 = model(ids_2, mask_2)
 
-            loss = nt_xent_loss(wm1_emb, wm2_emb)  
+            loss = nt_xent_loss(emb1, emb2)  
 
             # Backpropagation and optimization
             optimizer.zero_grad()
@@ -109,8 +108,8 @@ def train(model, dataloader, optimizer, epochs):
 
 # Run training
 if __name__ == "__main__":
-    train_file = os.path.join("data","contrastive_pairs.json")  # path to your pair file
-    data = load_pairs(train_file)
+    train_file = os.path.join("data","contrastive_Sentence_key_pairs.json")  # path to your pair file
+    data = load_data(train_file)
     data = data[:100]
     key1 ="I_am_doing_my_research"
     key2= "This_is_my_test_key"
