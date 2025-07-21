@@ -112,10 +112,10 @@ def evaluate(model, dataloader):
 
 # ——— Main ———
 if __name__ == "__main__":
-    test_file     = os.path.join( "data", "contrastive_pairs.json")    # must have 'text' & 'label'
-    encoder_path  = os.path.join("contrastive_output","contrastive_model.pt")
+    test_file= os.path.join( "data", "contrastive_pairs.json")    # must have 'text' & 'label'
+    encoder_path= os.path.join("contrastive_output","contrastive_model.pt")
     detector_path = os.path.join("contrastive_output","perkey_watermark_detector.pt")
-    key           = "I_am_doing_my_research"
+    key="I_am_doing_my_research"
 
     # prepare data
     dataset  = DetectionDataset(test_file, tokenizer, key)

@@ -22,8 +22,8 @@ def load_pairs(pair_file):
     return pairs
 
 class ContrastiveTextDataset(Dataset):
-    def __init__(self, pairs, tokenizer, max_length=256):
-        self.data = pairs
+    def __init__(self, data, tokenizer, max_length=256):
+        self.data = data
         self.tokenizer = tokenizer
         self.max_length = max_length
 
@@ -69,12 +69,7 @@ class WMDetector(nn.Module):
             nn.Dropout(0.2),
             nn.Linear(128, 1),
         )
-      
-    # def forward(self, input_ids, attention_mask):
-        # with torch.no_grad():
-        #     pooled_output = self.encoder(input_ids=input_ids, attention_mask=attention_mask).pooler_output
-        # logits = self.classifier(pooled_output)
-        # return logits
+        
     def forward(self, input_ids, attention_mask):
         with torch.no_grad():
             outputs = self.encoder(

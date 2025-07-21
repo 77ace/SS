@@ -1,4 +1,5 @@
 import numpy as np
+import random
 def AdaptiveSampling(alternatives, similarity):
     """
     Adaptive sampling function to select a word based on its similarity score.
@@ -99,22 +100,23 @@ def hash_key_sampling_with_context_auto(original, alternatives, similarity, key,
     context_window = " ".join(tokens[start:position])
  
     filtered = []
-    hash_values = []
+    # hash_values = []
     for alt, sim in zip(alternatives, similarity):
         hash_input = f"{key}:{context_window.lower()}:{alt.lower()}"
         hash_val = int(hashlib.sha256(hash_input.encode("utf-8")).hexdigest(), 16)
         if hash_val % 2 == 1:
-            hash_values.append(1)
+            # hash_values.append(1)
             filtered.append((alt, sim))
-        else:
-            hash_values.append(0)
+        # else:
+        #     hash_values.append(0)
 
     # #check everything working as intended
     # print(f"-------hash_values= {hash_values}-------") 
     # print(f"-------Filtered Candidates= {filtered}-------")
 
     if filtered:
-        return max(filtered, key=lambda x: x[1])[0]
+        # return max(filtered, key=lambda x: x[1])[0] # Return the candidate with the highest similarity score
+        return random.choice(filtered)[0]  # Randomly select from filtered candidates
     else:
         print("No candidates found based on the hash-based sampling.")
         return original
